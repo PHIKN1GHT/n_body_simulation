@@ -1,32 +1,14 @@
 #pragma once
+#include "common.h"
 #include<vector>
 #include<queue>
 #include<iostream>
 #include<string>
 #include"simulation.h"
-struct position {
-	double x, y;
-};
+
 
 struct quadnode;
 typedef quadnode* nodeptr;
-
-class particle {
-public:
-	position current;
-	position velocity;
-	double mass;
-
-	void tttick(const quadnode& node);
-	void drift() {
-		
-		
-		this->current.x += this->velocity.x * timestep;
-		this->current.y += this->velocity.y * timestep;
-		//std::cout << "vx" << velocity.x << std::endl;
-		//std::cout << "vy" << velocity.y << std::endl;
-	}
-};
 
 
 typedef particle* particleptr;
@@ -108,7 +90,7 @@ struct quadnode {
 		}
 	}
 
-std::vector<particleptr> all() {
+	std::vector<particleptr> all() {
 		
 		if (this->within != NULL) {
 			std::vector<particleptr> result;
@@ -130,6 +112,38 @@ std::vector<particleptr> all() {
 		std::cout << this->name << std::endl;
 		for (int i = 0; i < 4; i++)
 			if (this->child[i] != NULL) this->child[i]->printtree();
+	}
+
+	void update(particle& par)& {
+		double rx = this->center.x - par.current.x;
+		double ry = this->center.y - par.current.y;
+		double r2 = rx * rx + ry * ry;
+		par.velocity.x += newton_g * timestep * this->npar * this->totalMass / par.mass / r2 / sqrt(r2) * rx;
+		par.velocity.y += newton_g * timestep * this->npar * this->totalMass / par.mass / r2 / sqrt(r2) * ry;
+		//cout << node.center.x << this->current.x << endl;
+//cout << "rx" << rx << endl;
+//cout << "ry" << ry << endl;
+
+
+
+//double r = sqrt(r2);
+//double x = r / softening;
+//double f = x * (8 - 9 * x + 2 * x * x * x);
+//this->velocity.x += newton_g * timestep * f * rx * node.npar / (softening * softening);
+//this->velocity.y += newton_g * timestep * f * ry * node.npar / (softening * softening);
+
+
+//cout << "r2 " <<r2 << endl;
+//cout << newton_g * timestep * rx * node.npar / (r2) << endl;
+//if (r2 > softening * softening) {
+	//this->velocity.x += newton_g * timestep * rx * node.npar / r2 / sqrt(r2);
+	//this->velocity.y += newton_g * timestep * ry * node.npar / r2 / sqrt(r2);
+//}
+//else {
+//	double r = sqrt(r2), x = r / softening, f = x * (8 - 9 * x + 2 * x * x * x);
+//	this->velocity.x += newton_g * timestep * f * rx * node.npar / (softening * softening);
+//	this->velocity.y += newton_g * timestep * f * ry * node.npar / (softening * softening);
+//}
 	}
 };
 
@@ -167,7 +181,8 @@ struct quadtree {
 				nodeptr cur = nodes.front(); nodes.pop();
 				if ((*cur).test(*(*iter))) {
 					if ((*cur).npar > 0)
-						(*(*iter)).tttick((*cur));
+						(*cur).update(*(*iter));
+						//(*(*iter)).tttick((*cur));
 				}
 				else {
 					if ((*cur).child[0] != NULL) nodes.push((*cur).child[0]);

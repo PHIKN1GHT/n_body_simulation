@@ -23,12 +23,16 @@ typedef particle* particleptr;
 
 
 extern void evolve_bruteforce_serial(const std::vector<particleptr>& pars);
+extern void evolve_bruteforce_parallel(const std::vector<particleptr>& pars);
 extern void evolve_quadtree_serial(const std::vector<particleptr>& pars);
 
 
 
 extern std::vector<particleptr> kepler();
 extern std::vector<particleptr> dual_kepler();
+extern std::vector<particleptr> random_sample(int);
 
-
+extern int MPI_RANK, MPI_SIZE;
+#define MPI_MASTER_COND if (MPI_RANK == 0)
+#define MPI_SLAVE_COND if (MPI_RANK != 0)
 

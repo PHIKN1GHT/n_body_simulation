@@ -21,3 +21,12 @@ std::vector<particleptr> dual_kepler() {
 	particles.push_back(new particle({ (double)(-rmin / 2.), (double)0, (double)0,  (-v / 2)  , 1 }));
 	return particles;
 }
+
+#define rand_in(a, b) ((rand() / double(RAND_MAX)) * (b - a + 1) + a)
+
+std::vector<particleptr> random_sample(int n) {
+	std::vector<particleptr> particles;
+	for (int i=0; i<n;i++)
+		particles.push_back(new particle({ (double)rand_in(-15, 15), (double)rand_in(-15, 15), (double)rand_in(-1, 1),  (double)rand_in(-1, 1), (double)rand_in(2, 5) }));
+	return particles;
+}

@@ -15,6 +15,7 @@ class particle {
 public:
 	position current;
 	position velocity;
+	double mass;
 
 	void tttick(const quadnode& node);
 	void drift() {
@@ -37,6 +38,7 @@ struct quadnode {
 	particleptr within = NULL;
 	int npar = 0;
 	std::string name;
+	double totalMass = 0;
 	//std::vector<particle> particles;
 	//int particle_number;
 
@@ -90,6 +92,7 @@ struct quadnode {
 		this->center.x = (this->npar * this->center.x + par.current.x) / double(this->npar + 1);
 		this->center.y = (this->npar * this->center.y + par.current.y) / double(this->npar + 1);
 		this->npar++;
+		this->totalMass += par.mass;
 	}
 
 	bool test(const particle& par) {

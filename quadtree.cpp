@@ -14,8 +14,8 @@ void particle::tttick(const quadnode& node) {
 
 
 	double r2 = rx * rx + ry * ry;
-	this->velocity.x += newton_g * timestep * node.npar / r2 / sqrt(r2) * rx;
-	this->velocity.y += newton_g * timestep * node.npar / r2 / sqrt(r2) * ry;
+	this->velocity.x += newton_g * timestep * node.npar * node.totalMass / this->mass / r2 / sqrt(r2) * rx;
+	this->velocity.y += newton_g * timestep * node.npar * node.totalMass / this->mass / r2 / sqrt(r2) * ry;
 	//double r = sqrt(r2);
 	//double x = r / softening;
 	//double f = x * (8 - 9 * x + 2 * x * x * x);
@@ -46,12 +46,12 @@ void test_quad_tree(){
 	std::vector<particleptr> particles;
 	double a = 10, e = 0.; double rmin = a * (1 - e), h = sqrt((rmin * (1 + e) * newton_g * 2)),
 		v = h / rmin;
-	particle p1 = particle({ {(double)(rmin / 2.), (double)0}, {(double)0,  (v / 2) } });
-	particle p2 = particle({ {(double)(-rmin / 2.), (double)0}, {(double)0, (-v / 2)} });
+	particle p1 = particle({ {(double)(rmin / 2.), (double)0}, {(double)0,  (v / 2) } , 3});
+	particle p2 = particle({ {(double)(-rmin / 2.), (double)0}, {(double)0, (-v / 2)} , 1});
 	particles.push_back(&p1); particles.push_back(&p2);
 	quadtree tree;
 	//tree.addall(particles);
-	for (int i = 0; i < 3000; i++) {
+	for (int i = 0; i < 1000; i++) {
 		cout << "P1: " << p1.current.x << " " << p1.current.y << " " << p1.velocity.x << " " << p1.velocity.y << "  ";
 		cout << "P2: " << p2.current.x << " " << p2.current.y << " " << p2.velocity.x << " " << p2.velocity.y << endl;
 		

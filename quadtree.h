@@ -11,16 +11,14 @@ struct quadnode;
 typedef quadnode* nodeptr;
 
 
-typedef particle* particleptr;
+
 
 struct quadnode {
 	nodeptr child[4];
-	position center;
-	double xmin, xmax, ymin, ymax;
+	double centerx, centery, xmin, xmax, ymin, ymax, totalMass = 0;
 	particleptr within = NULL;
 	int npar = 0;
 	std::string name;
-	double totalMass = 0;
 	//std::vector<particle> particles;
 	//int particle_number;
 
@@ -30,15 +28,15 @@ struct quadnode {
 		this->ymin = ymin;
 		this->ymax = ymax;
 		this->name = name;
-		this->center.x = this->center.y = 0;
+		this->centerx = this->centery = 0;
 
 		this->child[0] = this->child[1] = this->child[2] = this->child[3] = NULL;
 
 	}
 
-	bool incell(const position& pos) & {
-		return (pos.x > this->xmin && pos.x <= this->xmax) &&
-			(pos.y > this->ymin && pos.y <= this->ymax);
+	bool incell(double x, double y) & {
+		return (x > this->xmin && x <= this->xmax) &&
+			(y > this->ymin && y <= this->ymax);
 	}
 
 
@@ -54,7 +52,7 @@ struct quadnode {
 
 	void add(const particle& par) {
 		//std::cout << "adding par " << std::endl;
-		if (!this->incell(par.current)) return;
+		if (!this->incell(par.x, par.y)) return;
 		if (this->npar > 0) {
 			if (this->npar == 1) {
 				this->make();
@@ -71,8 +69,8 @@ struct quadnode {
 			//std::cout << "node " << this->name << " added. " << std::endl;
 		}
 
-		this->center.x = (this->npar * this->center.x + par.current.x) / double(this->npar + 1);
-		this->center.y = (this->npar * this->center.y + par.current.y) / double(this->npar + 1);
+		this->centerx = (this->npar * this->centerx + par.x) / double(this->npar + 1);
+		this->centery = (this->npar * this->centery + par.y) / double(this->npar + 1);
 		this->npar++;
 		this->totalMass += par.mass;
 	}
@@ -80,8 +78,8 @@ struct quadnode {
 	bool test(const particle& par) {
 		if (this->child[0] != NULL) {
 			double s = this->xmax - this->xmin;
-			double dx = par.current.x - this->center.x;
-			double dy = par.current.y - this->center.y;
+			double dx = par.x - this->centerx;
+			double dy = par.y - this->centery;
 			double dist = sqrt(dx * dx + dy * dy);
 			//std::cout << "test " << dist << std::endl;
 			return dist / s > tree_thres && dist > softening;
@@ -115,11 +113,11 @@ struct quadnode {
 	}
 
 	void update(particle& par)& {
-		double rx = this->center.x - par.current.x;
-		double ry = this->center.y - par.current.y;
+		double rx = this->centerx - par.x;
+		double ry = this->centery - par.y;
 		double r2 = rx * rx + ry * ry;
-		par.velocity.x += newton_g * timestep * this->npar * this->totalMass / par.mass / r2 / sqrt(r2) * rx;
-		par.velocity.y += newton_g * timestep * this->npar * this->totalMass / par.mass / r2 / sqrt(r2) * ry;
+		par.vx += newton_g * timestep * this->npar * this->totalMass / par.mass / r2 / sqrt(r2) * rx;
+		par.vy += newton_g * timestep * this->npar * this->totalMass / par.mass / r2 / sqrt(r2) * ry;
 		//cout << node.center.x << this->current.x << endl;
 //cout << "rx" << rx << endl;
 //cout << "ry" << ry << endl;
@@ -148,58 +146,7 @@ struct quadnode {
 };
 
 
-
-struct quadtree {
-	//quadnode root;
-
-	//quadtree():root(quadnode(-box_size, box_size, -box_size, box_size, "rt")) {};
-
-	//void addall() {
-	//	quadnode p = root;
-
-	//}
-
-	void evolve(const std::vector<particleptr> & pars) {
-		quadnode root = quadnode(-box_size, box_size, -box_size, box_size, "rt");
-		
-		for (auto iter = pars.begin(); iter != pars.end(); iter++)
-			root.add(*(*iter));
-
-		std::vector<particleptr> allpars = root.all();
-
-		//std::cout << "printing all pars: " << std::endl;
-		
-		//for (auto iter = allpars.begin(); iter != allpars.end(); iter++) {
-		//	particle p = *(*iter);
-		//	std::cout << p.current.x << " " << p.current.y << " " << p.velocity.x << " " << p.velocity.y << std::endl;
-		//}
-		//std::cout << "printing ends." << std::endl;
-
-		for (auto iter = allpars.begin(); iter != allpars.end(); iter++) {
-			std::queue<nodeptr> nodes({&root });
-			while (nodes.size()) {
-				nodeptr cur = nodes.front(); nodes.pop();
-				if ((*cur).test(*(*iter))) {
-					if ((*cur).npar > 0)
-						(*cur).update(*(*iter));
-						//(*(*iter)).tttick((*cur));
-				}
-				else {
-					if ((*cur).child[0] != NULL) nodes.push((*cur).child[0]);
-					if ((*cur).child[1] != NULL) nodes.push((*cur).child[1]);
-					if ((*cur).child[2] != NULL) nodes.push((*cur).child[2]);
-					if ((*cur).child[3] != NULL) nodes.push((*cur).child[3]);
-				}
-			}
-
-
-			(*(*iter)).drift();
-			//std::cout << "print tree" << std::endl;
-			//root.printtree();
-		}
-	}
-};
-
+extern void evolve_quadtree_serial(const std::vector<particleptr>& pars);
 extern void test_quad_tree();
 
 

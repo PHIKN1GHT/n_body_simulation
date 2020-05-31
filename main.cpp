@@ -7,8 +7,6 @@
 
 using namespace std;
 
-int MPI_RANK, MPI_SIZE;
-
 int main(int argc, char* argv[])
 {
 	MPI_Init(&argc, &argv);
@@ -25,7 +23,7 @@ int main(int argc, char* argv[])
 	//	if (string(argv[i])) == 
 	//int rnk = 0, siz = 0; MPI_Init(&argc, &argv);
 	srand(233);
-	auto particles = random_sample(2333);// = dual_kepler();
+	auto particles = random_sample(23);// = dual_kepler();
 	//auto particles = dual_kepler();
 
 
@@ -39,9 +37,9 @@ int main(int argc, char* argv[])
 				cout << (*par).x << " " << (*par).y << " ";
 			cout << endl;
 		}
-		//evolve_quadtree_serial(particles);
-		//evolve_bruteforce_serial(particles);
-		evolve_bruteforce_parallel(particles);
+			evolve_quadtree_serial(particles);
+			//evolve_bruteforce_serial(particles);
+		//evolve_bruteforce_parallel(particles);
 	}
 
 	MPI_Finalize();
@@ -53,34 +51,6 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-
-
-void test_quad_tree() {
-	//cout << "hello, world" << endl;
-
-
-
-	//particle p1 = particle({ {(double)(rmin / 2.), (double)0}, {(double)0,  (v / 2) } , 1});
-	//particle p2 = particle({ {(double)(-rmin / 2.), (double)0}, {(double)0, (-v / 2)} , 1});
-	//particle p3 = particle({ {(double)0, (double)(rmin / 2.)}, {(v / 2), (double)0} , 1 });
-	//particle p4 = particle({ {(double)0, (double)(-rmin / 2.)}, {(-v / 2), (double)0} , 1 });
-	//particles.push_back(&p1); particles.push_back(&p2);
-
-
-
-
-
-
-
-
-	//particles = InitialConditions.kepler(10, 0., newton_g)
-	//def kepler(a, e, NEWTON_G):
-	// #periastron
-	//	 #angular momentum
-	//	
-	//	return[Particle(rmin / 2., 0, 0, 0, 0, v / 2., "A"), \
-	//	Particle(-rmin / 2., 0, 0, 0, 0, -v / 2., "B")]
-}
 
 
 

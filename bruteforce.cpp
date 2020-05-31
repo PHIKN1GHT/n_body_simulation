@@ -7,7 +7,7 @@ void calc_force(const int & i,  const double & len, const std::vector<particlept
         if (j == i) continue;
         double dx = (*pars[j]).x - (*pars[i]).x;
         double dy = (*pars[j]).y - (*pars[i]).y;
-        double sqdist = dx * dx + dy * dy < 1.0 ? 1.0 : dx * dx + dy * dy;// +SOFTENING;
+        double sqdist = softensqdist(dx * dx + dy * dy);
         double InvDist = 1.0 / (sqrt(sqdist));
         double InvDist3 = InvDist * InvDist * InvDist;
         fx += (dx * InvDist3 * (*pars[j]).mass) / (*pars[i]).mass;
@@ -45,8 +45,8 @@ void evolve_bruteforce_parallel(const std::vector<particleptr>& pars) {
     MPI_Bcast(nfy, len, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     for (int i = 0; i < len; i++) {
-        (*pars[i]).vx += timestep * nfx[i];
-        (*pars[i]).vy += timestep * nfy[i];
+        (*pars[i]).vx += timestep * (double)(*(nfx + i));
+        (*pars[i]).vy += timestep * (double)(*(nfx + i));
         (*pars[i]).drift();
     }
 

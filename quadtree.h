@@ -63,6 +63,56 @@ struct quadnode {
 		this->totalMass += par.mass;
 	}
 
+	// badfunc
+	void make_parallel() {
+		double xhalf = (this->xmin + this->xmax) / 2.,
+			yhalf = (this->ymin + this->ymax) / 2.;
+
+		#pragma omp parallel
+		{
+			int a[4] = { this->xmin , this->xmin , xhalf , xhalf };
+			int b[4] = { xhalf , xhalf , this->xmax , this->xmax };
+			int c[4] = { this->ymin, yhalf ,this->ymin, yhalf };
+			int d[4] = { yhalf ,this->ymax, yhalf, this->ymax };
+			#pragma omp for
+			for (int i = 0; i < 4; i++)
+				this->child[i] = new quadnode(a[i], b[i], c[i], d[i], this->name + "." + std::to_string(i));
+		}
+	}
+
+
+	void add_parallel(const particle& par) {
+		if (!this->incell(par.x, par.y)) return;
+		if (this->npar > 0) {
+			if (this->npar == 1) {
+				this->make();
+
+				#pragma omp parallel
+				{
+				#pragma omp for
+					for (int i = 0; i < 4; i++)
+						(this->child[i])->add_parallel(*(this->within));
+				}
+				this->within = NULL;
+			}
+			#pragma omp parallel
+			{
+				#pragma omp for
+				for (int i = 0; i < 4; i++)
+					(this->child[i])->add_parallel(par);
+			}
+
+		}
+		else {
+			this->within = (particleptr)&par;
+		}
+
+		this->centerx = (this->npar * this->centerx + par.x) / double(this->npar + 1);
+		this->centery = (this->npar * this->centery + par.y) / double(this->npar + 1);
+		this->npar++;
+		this->totalMass += par.mass;
+	}
+
 	bool test(const particle& par) {
 		if (this->child[0] != NULL) {
 			double s = this->xmax - this->xmin;
@@ -90,6 +140,27 @@ struct quadnode {
 			return result;
 		}
 		
+	}
+
+	std::vector<particleptr> all_parallel() {
+		if (this->within != NULL) {
+			std::vector<particleptr> result;
+			result.push_back(this->within);
+			return result;
+		}
+		else {
+			std::vector<particleptr> result;
+			#pragma omp parallel
+			{
+				#pragma omp for
+				for (int i = 0; i < 4; i++) if (this->child[i] != NULL) {
+					std::vector<particleptr> subresult = (this->child[i])->all();
+					result.insert(result.end(), subresult.begin(), subresult.end());
+				}
+			}
+			return result;
+		}
+
 	}
 
 	void printtree() {

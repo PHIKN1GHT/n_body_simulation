@@ -3,7 +3,8 @@
 #include <iostream>
 #include <string>
 #include <ctime>
-
+bool output = false;
+//bool output = true;
 using namespace std;
 
 int main(int argc, char* argv[])
@@ -20,15 +21,17 @@ int main(int argc, char* argv[])
 	auto particles = random_sample(23333);// = dual_kepler();
 	for (int i = 0; i < 5; i++) {
 		MPI_MASTER_COND {
-			for (auto par : particles)
-				cout << (*par).x << " " << (*par).y << " ";
-			cout << endl;
+			if (output) {
+				for (auto par : particles)
+					cout << (*par).x << " " << (*par).y << " ";
+				cout << endl;
+			}
 		}
 
-		evolve_quadtree_parallel(particles);
-		evolve_quadtree_serial(particles);
-		evolve_bruteforce_serial(particles);
-		evolve_bruteforce_parallel(particles);
+			//evolve_quadtree_parallel(particles);
+			evolve_quadtree_serial(particles);
+		//evolve_bruteforce_serial(particles);
+		//evolve_bruteforce_parallel(particles);
 	}
 
 	MPI_Finalize();

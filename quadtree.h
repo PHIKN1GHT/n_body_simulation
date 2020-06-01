@@ -1,9 +1,10 @@
 #pragma once
 #include "common.h"
-#include<vector>
-#include<queue>
-#include<iostream>
-#include<string>
+#include <vector>
+#include <queue>
+#include <iostream>
+#include <string>
+#include <omp.h>
 
 struct quadnode;
 typedef quadnode* nodeptr;
@@ -14,8 +15,6 @@ struct quadnode {
 	particleptr within = NULL;
 	int npar = 0;
 	std::string name;
-	//std::vector<particle> particles;
-	//int particle_number;
 
 	quadnode(double xmin, double xmax, double ymin, double ymax, std::string name) {
 		this->xmin = xmin;
@@ -24,9 +23,7 @@ struct quadnode {
 		this->ymax = ymax;
 		this->name = name;
 		this->centerx = this->centery = 0;
-
 		this->child[0] = this->child[1] = this->child[2] = this->child[3] = NULL;
-
 	}
 
 	bool incell(double x, double y) & {

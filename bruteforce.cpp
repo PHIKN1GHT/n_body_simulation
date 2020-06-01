@@ -10,8 +10,8 @@ void calc_force(const int & i,  const double & len, const std::vector<particlept
         double sqdist = softensqdist(dx * dx + dy * dy);
         double InvDist = 1.0 / (sqrt(sqdist));
         double InvDist3 = InvDist * InvDist * InvDist;
-        fx += (dx * InvDist3 * (*pars[j]).mass) / (*pars[i]).mass;
-        fy += (dy * InvDist3 * (*pars[j]).mass) / (*pars[i]).mass;
+        fx += newton_g * (dx * InvDist3 * (*pars[j]).mass) / (*pars[i]).mass;
+        fy += newton_g * (dy * InvDist3 * (*pars[j]).mass) / (*pars[i]).mass;
     }
 }
 
@@ -25,7 +25,6 @@ void evolve_bruteforce_serial(const std::vector<particleptr>& pars) {
     }
     for (int i = 0; i < len; i++) (*pars[i]).drift();
 }
-
 
 void evolve_bruteforce_parallel(const std::vector<particleptr>& pars) {
     int len = pars.size(), local_len = len / MPI_SIZE + (len % MPI_SIZE != 0), offset = local_len * MPI_RANK;

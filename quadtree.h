@@ -63,45 +63,56 @@ struct quadnode {
 		this->totalMass += par.mass;
 	}
 
-	// badfunc
 	void make_parallel() {
 		double xhalf = (this->xmin + this->xmax) / 2.,
 			yhalf = (this->ymin + this->ymax) / 2.;
 
-		#pragma omp parallel
+		//#pragma omp parallel
 		{
-			int a[4] = { this->xmin , this->xmin , xhalf , xhalf };
-			int b[4] = { xhalf , xhalf , this->xmax , this->xmax };
-			int c[4] = { this->ymin, yhalf ,this->ymin, yhalf };
-			int d[4] = { yhalf ,this->ymax, yhalf, this->ymax };
-			#pragma omp for
+			double a[4] = { this->xmin , this->xmin , xhalf , xhalf };
+			double b[4] = { xhalf , xhalf , this->xmax , this->xmax };
+			double c[4] = { this->ymin, yhalf ,this->ymin, yhalf };
+			double d[4] = { yhalf ,this->ymax, yhalf, this->ymax };
+			//#pragma omp for
 			for (int i = 0; i < 4; i++)
-				this->child[i] = new quadnode(a[i], b[i], c[i], d[i], this->name + "." + std::to_string(i));
+				this->child[i] = new quadnode(a[i], b[i], c[i], d[i], "");//this->name + "." + std::to_string(i)
 		}
 	}
 
 
-	void add_parallel(const particle& par) {
+	void add_parallel(const particle& par, int depth) {
 		if (!this->incell(par.x, par.y)) return;
 		if (this->npar > 0) {
 			if (this->npar == 1) {
-				this->make();
+				this->make_parallel();
 
-				#pragma omp parallel
-				{
-				#pragma omp for
+				if (depth < DEPTH_LIM) {
+					//#pragma omp parallel
+					{
+						//#pragma omp for
+						for (int i = 0; i < 4; i++)
+							(this->child[i])->add_parallel(*(this->within), depth + 1);
+					}
+
+				} else {
 					for (int i = 0; i < 4; i++)
-						(this->child[i])->add_parallel(*(this->within));
+						(this->child[i])->add(*(this->within));
 				}
+
 				this->within = NULL;
 			}
-			#pragma omp parallel
-			{
-				#pragma omp for
-				for (int i = 0; i < 4; i++)
-					(this->child[i])->add_parallel(par);
-			}
 
+			if (depth < DEPTH_LIM) {
+				//#pragma omp parallel
+				{
+					//#pragma omp for
+					for (int i = 0; i < 4; i++)
+						(this->child[i])->add_parallel(par, depth + 1);
+				}
+			} else {
+				for (int i = 0; i < 4; i++)
+					(this->child[i])->add(par);
+			}
 		}
 		else {
 			this->within = (particleptr)&par;

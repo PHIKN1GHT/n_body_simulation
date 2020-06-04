@@ -13,13 +13,13 @@ int main(int argc, char* argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD, &MPI_RANK);
 	MPI_Comm_size(MPI_COMM_WORLD, &MPI_SIZE);
 	omp_set_dynamic(0);
-	omp_set_num_threads(8);
+	omp_set_num_threads(NUM_THREAD);
 
 	clock_t time_start, time_end;
 	MPI_MASTER_COND time_start = clock();
-	srand(233);
-	auto particles = random_sample(23333);// = dual_kepler();
-	for (int i = 0; i < 5; i++) {
+	srand(21231);
+	auto particles = random_sample(NUM_PAR);// = dual_kepler();
+	for (int i = 0; i < 8; i++) {
 		MPI_MASTER_COND {
 			if (output) {
 				for (auto par : particles)
@@ -27,11 +27,11 @@ int main(int argc, char* argv[])
 				cout << endl;
 			}
 		}
-
-			//evolve_quadtree_parallel(particles);
-			evolve_quadtree_serial(particles);
-		//evolve_bruteforce_serial(particles);
-		//evolve_bruteforce_parallel(particles);
+		evolve_bruteforce_serial(particles);
+		evolve_bruteforce_parallel(particles);
+		evolve_quadtree_parallel(particles);
+		evolve_quadtree_serial(particles);
+		
 	}
 
 	MPI_Finalize();

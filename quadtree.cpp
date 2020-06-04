@@ -29,7 +29,7 @@ void evolve_quadtree_serial(const std::vector<particleptr>& pars) {
 void evolve_quadtree_parallel(const std::vector<particleptr>& pars) {
 	quadnode root = quadnode(-box_size, box_size, -box_size, box_size, "rt");
 	for (auto iter = pars.begin(); iter != pars.end(); iter++)
-		root.add_parallel(*(*iter));
+		root.add_parallel(*(*iter), 0);
 
 	#pragma omp parallel
 	{

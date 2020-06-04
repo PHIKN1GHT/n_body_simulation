@@ -7,6 +7,10 @@ const double box_size = 1e6;
 const double softening = 0;
 const double tree_thres = 1;
 const double display_f = 200;
+const int DEPTH_LIM = 4;
+
+const int NUM_THREAD = 8;
+const int NUM_PAR = 40000;
 
 struct particle {
 	double x, y, vx, vy, mass;
